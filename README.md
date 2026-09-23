@@ -6,7 +6,7 @@ Karya untuk challenge **"Berkarya Untuk Indonesia"** — Mahreen Indonesia Inter
 
 - Frontend: [https://mahreen-explorer.vercel.app](https://mahreen-explorer.vercel.app)
 - Dokumentasi API (Swagger UI): [https://mahreenexplorer.onrender.com/api/docs](https://mahreenexplorer.onrender.com/api/docs)
-- Repository GitHub: [https://github.com/USERNAME_GITHUB/MahreenExplorer](https://github.com/JakaxKato/MahreenExplorer) 
+- Repository GitHub: (https://github.com/JakaxKato/MahreenExplorer) 
 
 *Catatan demo: backend memakai Render Free, jadi service bisa tidur setelah 15 menit tanpa trafik; request pertama sesudah idle bisa membutuhkan sekitar satu menit.*
 
