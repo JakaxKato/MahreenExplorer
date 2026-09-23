@@ -9,6 +9,7 @@ import apiRoutes from './routes/api.js';
 import { errorHandler, notFoundHandler } from './middleware/errors.js';
 
 const app = express();
+app.set('trust proxy', 1);
 const allowedOrigins = (process.env.FRONTEND_ORIGIN || 'http://localhost:5173').split(',').map(value => value.trim());
 const swaggerSpec = swaggerJsdoc({
   definition: {
@@ -45,9 +46,22 @@ if (!process.env.PUBLIC_API_URL) swaggerSpec.servers = [{ url: '/api/v1' }];
 
 app.get('/api/openapi.json', (req, res) => res.json(swaggerSpec));
 
+app.get('/', (req, res) => res.json({
+  name: 'Mahreen Explorer API',
+  version: '1.0.0',
+  status: 'ok',
+  message: 'API backend Mahreen Explorer berjalan. Frontend aplikasi di-deploy terpisah di Vercel.',
+  basePath: '/api/v1',
+  links: {
+    health: '/api/v1/health',
+    documentation: '/api/docs',
+    openapi: '/api/openapi.json'
+  }
+}));
+
 app.use(cors({ origin: (origin, callback) => {
   if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
-  return callback(new Error('Origin tidak diizinkan oleh CORS'));
+  return callback(Object.assign(new Error('Origin tidak diizinkan oleh CORS'), { status: 403, code: 'CORS_ERROR' }));
 } }));
 app.use(express.json());
 app.use(morgan('tiny'));

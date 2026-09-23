@@ -9,6 +9,13 @@ describe('API infrastructure', () => {
     expect(response.body).toEqual({ status: 'ok' });
   });
 
+  it('serves a friendly API overview at the root path', async () => {
+    const response = await request(app).get('/');
+    expect(response.status).toBe(200);
+    expect(response.body.name).toBe('Mahreen Explorer API');
+    expect(response.body.links.documentation).toBe('/api/docs');
+  });
+
   it('returns sourced company profile and portfolio statistics', async () => {
     const response = await request(app).get('/api/v1/about');
     expect(response.status).toBe(200);
