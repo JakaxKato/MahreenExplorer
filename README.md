@@ -6,17 +6,33 @@ Karya untuk challenge **"Berkarya Untuk Indonesia"** — Mahreen Indonesia Inter
 
 - Frontend: [https://mahreen-explorer.vercel.app](https://mahreen-explorer.vercel.app)
 - Dokumentasi API (Swagger UI): [https://mahreenexplorer.onrender.com/api/docs](https://mahreenexplorer.onrender.com/api/docs)
-- Repository GitHub: [https://github.com/USERNAME_GITHUB/MahreenExplorer](https://github.com/USERNAME_GITHUB/MahreenExplorer) — *ganti `USERNAME_GITHUB` dengan username kamu*
+- Repository GitHub: [https://github.com/USERNAME_GITHUB/MahreenExplorer](https://github.com/JakaxKato/MahreenExplorer) 
 
 *Catatan demo: backend memakai Render Free, jadi service bisa tidur setelah 15 menit tanpa trafik; request pertama sesudah idle bisa membutuhkan sekitar satu menit.*
 
-## Masalah dan solusi
+## Tentang proyek
 
-Program, karya, dan peluang Mahreen Indonesia tersebar di banyak divisi sehingga sulit dikenal, dipahami, dan diikuti generasi muda. **Mahreen Explorer** menjawabnya dengan satu direktori lintas lima pilar: pengunjung bisa mencari kata kunci, memilah pilar/kategori/tahun, membaca detail karya, dan langsung menuju sumber resminya—dalam hitungan detik.
+Mahreen Indonesia punya banyak program, karya, dan peluang lintas divisi, tetapi informasinya tersebar sehingga sulit dikenal, dipahami, dan diikuti generasi muda. **Mahreen Explorer** adalah direktori showcase yang menyatukan karya dan profil Mahreen dalam satu ruang yang bisa dicari dan difilter dalam hitungan detik, sehingga pengunjung muda langsung menemukan jawaban: *Mahreen ini bergerak di bidang apa saja, dan mana yang relevan buat saya?*
 
-Fokus backend menjadi pembeda submission ini: REST API Express dengan validasi query Zod, pencarian dan pagination MongoDB, cache Redis TTL 60 detik, rate limiting, serta dokumentasi interaktif di `/api/docs`. Frontend memakai bahasa visual yang dekat dengan audiens muda agar karya Mahreen terasa relevan dan mudah dijelajahi.
+Masalah yang dijawab bukan sekadar tampilan, melainkan **arsitektur informasi** — lima pilar dengan puluhan karya butuh sistem pencarian, filter, dan pagination yang solid. Itulah fokus backend proyek ini, sementara frontend tetap dirancang dekat dengan audiens muda.
 
-Semua karya ditautkan ke [portofolio resmi](https://mahreenindonesia.com/portofolio); profil, sejarah, dan visi-misi bersumber dari [Tentang Kami](https://mahreenindonesia.com/tentang). Statistik diberi keterangan sumber agar tidak tercampur dengan metrik beranda utama.
+## Fitur utama
+
+Untuk pengunjung:
+
+- **Pencarian instan** dengan debounce 400 ms terhadap judul dan deskripsi karya
+- **Filter kombinasi** berdasarkan pilar, kategori, dan tahun, plus pengurutan dan pagination
+- **Halaman detail karya** dengan tautan ke sumber portofolio dan halaman pilar resmi
+- **Profil Mahreen Indonesia**: sejarah, visi-misi, kepemimpinan, legalitas, dan statistik yang selalu disertai tautan sumber
+- State lengkap: loading, empty, error, dan fallback saat sebagian data belum tersedia
+
+Sorotan backend (pembeda submission ini):
+
+- **REST API** Node.js + Express di base URL `/api/v1`, kontrak terdokumentasi penuh di Swagger UI dan OpenAPI JSON
+- **Validasi query Zod** sebelum menyentuh database: halaman dan limit harus angka positif, tahun valid, pilar harus slug terdaftar — input tidak valid ditolak dengan kode `VALIDATION_ERROR`
+- **Pencarian teks dan indeks MongoDB** di judul, deskripsi, pilar, kategori, dan tahun agar filter tetap cepat
+- **Cache Redis via Upstash** dengan key dari parameter yang tervalidasi, TTL 60 detik, dan fallback otomatis ke MongoDB saat cache tidak tersedia — API read-only sehingga tidak butuh logika invalidasi
+- **Rate limiting** 100 request per 15 menit per IP, **CORS** berbasis daftar origin frontend, logging request, dan format error konsisten `{ "error": { "message", "code" } }`
 
 ## Arsitektur
 
@@ -29,7 +45,39 @@ flowchart LR
     API --> DOCS[Swagger UI /api/docs]
 ```
 
-## Menjalankan lokal
+Alur request pencarian: `Client → Express route → validasi Zod → cek cache Redis (key = hash query params) → jika miss, query MongoDB dengan filter + text search → simpan ke cache (TTL 60 detik) → return JSON`.
+
+## API
+
+Base URL: `/api/v1`
+
+| Method & path | Fungsi |
+|---|---|
+| `GET /health` | Health check |
+| `GET /about` | Profil, sejarah, visi-misi, legalitas, dan statistik dengan tautan sumber |
+| `GET /pillars` | Daftar pilar beserta jumlah karya |
+| `GET /works` | Search/filter/pagination; mendukung `q`, `pillar`, `category`, `year`, `page`, `limit` (maks. 50), `sort` (`newest`, `oldest`, `title`) |
+| `GET /works/stats` | Jumlah karya total, per pilar, dan per tahun |
+| `GET /works/:slug` | Detail karya |
+| `GET /categories` | Kategori unik |
+
+Dokumentasi interaktif tersedia di `/api/docs`; OpenAPI JSON di `/api/openapi.json`. Endpoint list memakai cache Redis 60 detik dengan fallback ke MongoDB saat cache tidak tersedia. API membatasi 100 request per 15 menit per IP.
+
+## Kredibilitas data
+
+Semua karya ditautkan ke [portofolio resmi](https://mahreenindonesia.com/portofolio); profil, sejarah, dan visi-misi bersumber dari [Tentang Kami](https://mahreenindonesia.com/tentang). Statistik ditampilkan sesuai halaman portofolio dan diberi keterangan sumber agar tidak tercampur dengan metrik beranda utama.
+
+## Penjelasan submission (≤150 kata)
+
+Mahreen Explorer menyatukan karya dan program dari lima pilar Mahreen Indonesia dalam direktori yang mudah dijelajahi. Pengunjung dapat mencari berdasarkan kata kunci, memilah pilar, kategori, dan tahun, lalu membuka detail karya serta tautan menuju sumber portofolio resmi. Profil, sejarah, visi-misi, dan statistik disertai tautan ke halaman resmi terkait. Untuk posisi Web Development dengan fokus Backend, proyek ini menonjolkan REST API Express dengan validasi query Zod, pencarian dan pagination MongoDB, cache Redis TTL 60 detik, rate limiting, serta dokumentasi interaktif Swagger pada `/api/docs`. Tujuannya membantu generasi muda memahami ragam aktivitas Mahreen dan menemukan bidang yang relevan bagi mereka.
+
+---
+
+## Untuk pengembang
+
+Bagian ini hanya untuk reproduksi dan pemeliharaan; reviewer tidak perlu membacanya.
+
+### Menjalankan lokal
 
 Persyaratan: Node.js 20+ dan MongoDB yang dapat diakses. Upstash opsional; API tetap berjalan tanpa Redis.
 
@@ -39,7 +87,7 @@ Persyaratan: Node.js 20+ dan MongoDB yang dapat diakses. Upstash opsional; API t
 4. Salin `frontend/.env.example` menjadi `frontend/.env`; sesuaikan `VITE_API_BASE_URL` bila API tidak berjalan di alamat default.
 5. Jalankan `npm install` dan `npm run dev` dari folder `frontend/` (default `http://localhost:5173`).
 
-## Environment variables
+### Environment variables
 
 Backend (`backend/.env`):
 
@@ -60,54 +108,15 @@ Frontend (`frontend/.env`):
 
 Jangan commit file `.env` atau kredensial.
 
-## API
+### Deployment yang dipakai
 
-Base URL: `/api/v1`
+Stack live: **GitHub public → Render Free API → MongoDB Atlas → Vercel Hobby frontend**. Upstash opsional.
 
-| Method & path | Fungsi |
-|---|---|
-| `GET /health` | Health check |
-| `GET /about` | Profil, sejarah, visi-misi, legalitas, dan statistik dengan tautan sumber |
-| `GET /pillars` | Daftar pilar beserta jumlah karya |
-| `GET /works` | Search/filter/pagination; mendukung `q`, `pillar`, `category`, `year`, `page`, `limit` (maks. 50), `sort` (`newest`, `oldest`, `title`) |
-| `GET /works/stats` | Jumlah karya total, per pilar, dan per tahun |
-| `GET /works/:slug` | Detail karya |
-| `GET /categories` | Kategori unik |
+- **Render**: Web Service dari folder `backend`, build `npm install`, start `npm start`, health check `/api/v1/health`, plan Free. Environment: `MONGODB_URI`, `FRONTEND_ORIGIN` (origin Vercel), `PUBLIC_API_URL`. Blueprint tersedia di `render.yaml`. Seed Atlas dijalankan dari lokal karena seed upsert aman diulang; pastikan Network Access Atlas mengizinkan koneksi service.
+- **Vercel**: import repo, root directory `frontend`, build `npm run build`, output `dist`. Set `VITE_API_BASE_URL` (tipe Config, environment Production) ke URL API berakhiran `/api/v1`, lalu redeploy karena perubahan environment hanya berlaku untuk deployment berikutnya. `frontend/vercel.json` menangani rewrite SPA untuk `/karya/:slug`.
+- Perhatikan batas tier gratis: jangan aktifkan pembayaran bila hanya untuk demo, dan periksa kuota Render.
 
-Dokumentasi interaktif tersedia di `/api/docs`; OpenAPI JSON di `/api/openapi.json`. Error konsisten menggunakan `{ "error": { "message": "...", "code": "..." } }`. Endpoint list memakai cache Redis 60 detik dengan fallback ke MongoDB saat cache tidak tersedia. API membatasi 100 request per 15 menit per IP.
-
-## Deploy gratis untuk portfolio
-
-Stack deployment: **GitHub public → Render Free API → MongoDB Atlas → Vercel Hobby frontend**. Upstash opsional dan boleh dilewati. Render Free cocok untuk demo, tetapi servicenya tidur setelah 15 menit tanpa trafik dan request pertama sesudah idle bisa membutuhkan sekitar satu menit. Vercel Hobby gratis untuk proyek personal/skala kecil. Periksa batas pemakaian dan jangan aktifkan pembayaran jika hanya ingin memakai tier gratis.
-
-### 1. Publikasikan repository ke GitHub
-- Buat repository public baru di akun GitHub, lalu hubungkan/push folder proyek ini.
-- Sebelum push, pastikan hanya source code, lockfiles, README, dan `.env.example` yang masuk. `.gitignore` mengecualikan `.env`, `node_modules`, dan `dist`; jangan pernah mengunggah kredensial MongoDB.
-
-### 2. Deploy API di Render
-- Hubungkan repository GitHub ke Render sebagai Web Service. Root directory `backend`, build command `npm install`, start command `npm start`, health check `/api/v1/health`, plan Free.
-- Bisa gunakan `render.yaml` sebagai Blueprint. Isi environment variables di dashboard Render: `MONGODB_URI` (Atlas), `FRONTEND_ORIGIN` (domain Vercel setelah tahap 3), dan `PUBLIC_API_URL` (URL Render tanpa slash akhir). Upstash variables opsional; Render otomatis mengatur `PORT`.
-- Setelah deploy, verifikasi `/api/v1/health`, `/api/v1/about`, `/api/docs`, dan `/api/openapi.json` pada domain Render.
-
-### 3. Seed Atlas
-- Jalankan `npm run seed` dari folder `backend` lokal memakai `MONGODB_URI` Atlas di `backend/.env`. Script memakai upsert dan tidak menghapus data lain.
-- Pastikan Atlas Network Access mengizinkan koneksi keluar dari service Render. Jangan salin URI atau password ke chat/repository.
-
-### 4. Deploy frontend di Vercel
-- Import repository di Vercel. Root directory `frontend`, framework Vite, build command `npm run build`, output directory `dist`.
-- Tambahkan environment variable `VITE_API_BASE_URL` dengan URL API Render berakhiran `/api/v1` sebagai tipe **Config** untuk environment **Production**, lalu redeploy. Perubahan environment hanya berlaku pada deployment berikutnya.
-- `frontend/vercel.json` sudah menyediakan rewrite SPA supaya URL detail `/karya/:slug` bisa dibuka langsung. Setelah domain Vercel didapat, isi `FRONTEND_ORIGIN` di Render dengan origin saja (contoh `https://project.vercel.app`) lalu redeploy API.
-
-### 5. Uji submission
-- Buka URL Vercel di browser private; uji pencarian, filter, detail karya, bagian Tentang dan sumbernya.
-- Verifikasi link dokumentasi `https://<render-service>.onrender.com/api/docs` dan buka sebuah URL `/karya/:slug` secara langsung.
-- Bagikan link frontend live, GitHub public, dan API docs kepada rekruter. Beri catatan bahwa request awal API gratis setelah idle mungkin lambat karena cold start.
-
-## Penjelasan submission (≤150 kata)
-
-Mahreen Explorer menyatukan karya dan program dari lima pilar Mahreen Indonesia dalam direktori yang mudah dijelajahi. Pengunjung dapat mencari berdasarkan kata kunci, memilah pilar, kategori, dan tahun, lalu membuka detail karya serta tautan menuju sumber portofolio resmi. Profil, sejarah, visi-misi, dan statistik disertai tautan ke halaman resmi terkait. Untuk posisi Web Development dengan fokus Backend, proyek ini menonjolkan REST API Express dengan validasi query Zod, pencarian dan pagination MongoDB, cache Redis TTL 60 detik, rate limiting, serta dokumentasi interaktif Swagger pada `/api/docs`. Tujuannya membantu generasi muda memahami ragam aktivitas Mahreen dan menemukan bidang yang relevan bagi mereka.
-
-## Verifikasi
+### Verifikasi
 
 - Backend: `cd backend && npm test`
 - Frontend production build: `cd frontend && npm run build`
