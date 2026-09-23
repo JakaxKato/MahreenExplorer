@@ -1,6 +1,22 @@
 # Mahreen Explorer
 
-Direktori karya lintas lima pilar Mahreen Indonesia. Explorer menyediakan pencarian, filter, detail karya, profil organisasi, dan API read-only. Karya seed ditautkan ke [portofolio resmi](https://mahreenindonesia.com/portofolio); profil, sejarah, dan visi-misi bersumber dari [Tentang Kami](https://mahreenindonesia.com/tentang). Statistik ditampilkan sesuai halaman portofolio dan diberi sumber agar tidak tercampur dengan metrik beranda utama.
+Karya untuk challenge **"Berkarya Untuk Indonesia"** — Mahreen Indonesia Internship, posisi **Web Development** dengan fokus backend.
+
+## Link live
+
+- Frontend: [https://mahreen-explorer.vercel.app](https://mahreen-explorer.vercel.app)
+- Dokumentasi API (Swagger UI): [https://mahreenexplorer.onrender.com/api/docs](https://mahreenexplorer.onrender.com/api/docs)
+- Repository GitHub: [https://github.com/USERNAME_GITHUB/MahreenExplorer](https://github.com/USERNAME_GITHUB/MahreenExplorer) — *ganti `USERNAME_GITHUB` dengan username kamu*
+
+*Catatan demo: backend memakai Render Free, jadi service bisa tidur setelah 15 menit tanpa trafik; request pertama sesudah idle bisa membutuhkan sekitar satu menit.*
+
+## Masalah dan solusi
+
+Program, karya, dan peluang Mahreen Indonesia tersebar di banyak divisi sehingga sulit dikenal, dipahami, dan diikuti generasi muda. **Mahreen Explorer** menjawabnya dengan satu direktori lintas lima pilar: pengunjung bisa mencari kata kunci, memilah pilar/kategori/tahun, membaca detail karya, dan langsung menuju sumber resminya—dalam hitungan detik.
+
+Fokus backend menjadi pembeda submission ini: REST API Express dengan validasi query Zod, pencarian dan pagination MongoDB, cache Redis TTL 60 detik, rate limiting, serta dokumentasi interaktif di `/api/docs`. Frontend memakai bahasa visual yang dekat dengan audiens muda agar karya Mahreen terasa relevan dan mudah dijelajahi.
+
+Semua karya ditautkan ke [portofolio resmi](https://mahreenindonesia.com/portofolio); profil, sejarah, dan visi-misi bersumber dari [Tentang Kami](https://mahreenindonesia.com/tentang). Statistik diberi keterangan sumber agar tidak tercampur dengan metrik beranda utama.
 
 ## Arsitektur
 
@@ -79,7 +95,7 @@ Stack deployment: **GitHub public → Render Free API → MongoDB Atlas → Verc
 
 ### 4. Deploy frontend di Vercel
 - Import repository di Vercel. Root directory `frontend`, framework Vite, build command `npm run build`, output directory `dist`.
-- Tambahkan environment variable `VITE_API_BASE_URL` dengan URL API Render berakhiran `/api/v1`, lalu deploy.
+- Tambahkan environment variable `VITE_API_BASE_URL` dengan URL API Render berakhiran `/api/v1` sebagai tipe **Config** untuk environment **Production**, lalu redeploy. Perubahan environment hanya berlaku pada deployment berikutnya.
 - `frontend/vercel.json` sudah menyediakan rewrite SPA supaya URL detail `/karya/:slug` bisa dibuka langsung. Setelah domain Vercel didapat, isi `FRONTEND_ORIGIN` di Render dengan origin saja (contoh `https://project.vercel.app`) lalu redeploy API.
 
 ### 5. Uji submission
